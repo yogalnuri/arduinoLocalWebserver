@@ -23,45 +23,17 @@ app.post('/update', function(req, res) {
     } if (!req.body.subject) {
         handleError(res, "Invalid user input", "Must provide an Subject.", 400);
     }else{
-		res.redirect("https://arduinoopencase.herokuapp.com/update/?maquina="+req.body.maquina+"&origin="+req.body.origin+"&status="+req.body.status+"&subject="+req.body.subject);
-    	/*var options={
-				protocol:"https:",
-				host:"https://arduinoopencase.herokuapp.com",
-				hostname:"arduinoopencase.herokuapp.com",
-    			path:"/update",
-    			port:11096,
-    			headers: [ 	'ConTent-Length', '123456',
-							'content-LENGTH', '123',
-							'content-type', 'text/json',
-							'CONNECTION', 'keep-alive',
-							'Host', 'arduinoopencase.herokuapp.com' ],
-    		    body: JSON.stringify({"maquina": req.body.maquina,
-    		    						"status": req.body.status,
-    		    						"origin":req.body.origin,
-    		    						"subject": req.body.subject})
-		}
-		console.log('Startin request');
-    	var req = https.get(options, function(res) {
-    		  console.log('STATUS: ' + res.statusCode);
-    		  console.log('HEADERS: ' + JSON.stringify(res.headers));
-
-    		  // Buffer the body entirely for processing as a whole.
-    		  var bodyChunks = [];
-    		  res.on('data', function(chunk) {
-    		    // You can process streamed parts here...
-    		    bodyChunks.push(chunk);
-    		  }).on('end', function() {
-    		    var body = Buffer.concat(bodyChunks);
-    		    console.log('BODY: ' + body);
-    		    // ...and/or process the entire body here.
-    		  })
-    		});
-
-    		req.on('error', function(e) {
-    		  console.log('ERROR: ' + e.message);
-    		  res.json({"ERROR":e.message});
-			});
-			*/
+    	console.log("redireccionano POST");
+    	console.log("https://arduinoopencase.herokuapp.com/update/?maquina="+req.body.maquina.replace(" ","%20")+"&origin="+req.body.origin.replace(" ","%20")+"&status="+req.body.status.replace(" ","%20")+"&subject="+req.body.subject.replace(" ","%20"));
+    	console.log("La que vale");
+    	console.log("https://arduinoopencase.herokuapp.com/update/?maquina=Maquina%201&origin=Web&status=New&subject=Reponer%20linea");
+    	try{
+    		res.redirect("https://arduinoopencase.herokuapp.com/update/?maquina="+req.body.maquina.replace(" ","%20")+"&origin="+req.body.origin.replace(" ","%20")+"&status="+req.body.status.replace(" ","%20")+"&subject="+req.body.subject.replace(" ","%20"));	
+    		 res.json({"OK": "redireccionado"});
+    	}catch(e){
+    		console.log(e.message);
+    	}
+		
     }
 
 });
@@ -77,7 +49,8 @@ app.get('/update', function(req, res) {
     } if (!req.query.subject) {
         handleError(res, "Invalid user input", "Must provide an Subject.", 400);
     }else{
-
+    	console.log("redireccionando GET");
+    	res.redirect("https://arduinoopencase.herokuapp.com/update/?maquina="+req.query.maquina+"&origin="+req.query.origin+"&status="+req.query.status+"&subject="+req.query.subject);
     }
 });
 function handleError(res, reason, message, code) {
