@@ -5,6 +5,8 @@ var http = require('http')
 var https = require('https')
 var url = require('url')
 var util = require('util')
+var modRewrite = require('connect-modrewrite');
+var querystring = require('querystring');
 
 var app = express();
 
@@ -13,27 +15,45 @@ app.set('port', process.env.PORT || 5000);
 app.use(express.static('public'));
 app.use(bodyParser.json());
 
-app.post('/update', function(req, res) {
-    if (!req.body.maquina) {
-        handleError(res, "Invalid user input", "Must provide a  machine name.", 400);
-    }else if (!req.body.status) {
-        handleError(res, "Invalid user input", "Must provide a Status.", 400);
-    } if (!req.body.origin) {
-        handleError(res, "Invalid user input", "Must provide an Origin.", 400);
-    } if (!req.body.subject) {
-        handleError(res, "Invalid user input", "Must provide an Subject.", 400);
-    }else{
-    	console.log("redireccionano POST");
-    	console.log("https://arduinoopencase.herokuapp.com/update/?maquina="+req.body.maquina.replace(" ","%20")+"&origin="+req.body.origin.replace(" ","%20")+"&status="+req.body.status.replace(" ","%20")+"&subject="+req.body.subject.replace(" ","%20"));
-    	console.log("La que vale");
-    	console.log("https://arduinoopencase.herokuapp.com/update/?maquina=Maquina%201&origin=Web&status=New&subject=Reponer%20linea");
-    	try{
-    		res.redirect("https://arduinoopencase.herokuapp.com/update/?maquina="+req.body.maquina.replace(" ","%20")+"&origin="+req.body.origin.replace(" ","%20")+"&status="+req.body.status.replace(" ","%20")+"&subject="+req.body.subject.replace(" ","%20"));	
-    		 res.json({"OK": "redireccionado"});
-    	}catch(e){
-    		console.log(e.message);
-    	}
-		
+app.post('/update', function(reqOrigen, resOrigen) {
+    if (!reqOrigen.body.maquina) {
+        handleError(resOrigen, "Invalid user input", "Must provide a  machine name.", 400);
+    }else if (!reqOrigen.body.status) {
+        handleError(resOrigen, "Invalid user input", "Must provide a Status.", 400);
+    } if (!reqOrigen.body.origin) {
+        handleError(resOrigen, "Invalid user input", "Must provide an Origin.", 400);
+    } if (!reqOrigen.body.subject) {
+        handleError(resOrigen, "Invalid user input", "Must provide an Subject.", 400);
+    }else{  	
+    	const https = require('https');
+    	
+    	const postData = querystring.stringify({
+  		  'maquina': reqOrigen.body.maquina,
+  		  'status':reqOrigen.body.status,
+  		  'origin':reqOrigen.body.origin,
+  		  'subject':reqOrigen.body.subject
+  		});
+
+    	const options = {
+    	  hostname: 'arduinoopencase.herokuapp.com',
+    	  port: 443,
+    	  path: '/update/?'+postData,
+    	  method: 'GET',
+    	};
+
+    	const req = https.request(options, (res) => {
+    	  console.log('statusCode:', res.statusCode);
+    	  console.log('headers:', res.headers);
+
+    	  res.on('data', (d) => {
+    	    process.stdout.write(d);
+    	  });
+    	});
+
+    	req.on('error', (e) => {
+    	  console.error(e);
+    	});
+    	req.end(postData);
     }
 
 });
@@ -50,9 +70,11 @@ app.get('/update', function(req, res) {
         handleError(res, "Invalid user input", "Must provide an Subject.", 400);
     }else{
     	console.log("redireccionando GET");
-    	res.redirect("https://arduinoopencase.herokuapp.com/update/?maquina="+req.query.maquina+"&origin="+req.query.origin+"&status="+req.query.status+"&subject="+req.query.subject);
+    	//res.redirect("https://arduinoopencase.herokuapp.com/update/?maquina="+req.query.maquina+"&origin="+req.query.origin+"&status="+req.query.status+"&subject="+req.query.subject);
     }
 });
+app.use(modRewrite([
+'http://192.168.1.47:5000/update  https://arduinoopencase.herokuapp.com/update/?maquina=Maquina%201&origin=Web&status=New&subject=Reponer%20linea']));
 function handleError(res, reason, message, code) {
   console.log("ERROR: " + reason);
   res.status(code || 500).json({"error": message});
