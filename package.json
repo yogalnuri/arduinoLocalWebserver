@@ -7,9 +7,9 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "body-parser": "^1.13.2",
+    "body-parser": "^1.20.1",
     "connect-modrewrite": "^0.10.2",
-    "express": "^4.13.1",
+    "express": "^4.18.2",
     "http-signature": "^1.2.0",
     "pg": "^4.4.0"
   },
